@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hover-based Advanced CSS Gradient Colorwheel</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        #colorwheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            margin: 20px auto;
+            position: relative;
+            cursor: crosshair;
+            overflow: hidden;
+        }
+        #hue-wheel {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background: conic-gradient(
+                from 45deg,
+                red, yellow, lime, cyan, blue, magenta, red
+            );
+        }
+        #lightness-gradient {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background: radial-gradient(
+                circle at center,
+                white 0%,
+                transparent 50%,
+                rgba(0,0,0,0.5) 100%
+            );
+        }
+        #selected-color {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hover-based Advanced CSS Gradient Colorwheel</h1>
+        <div id="colorwheel">
+            <div id="hue-wheel"></div>
+            <div id="lightness-gradient"></div>
+        </div>
+        <div id="selected-color"></div>
+        <p>Selected Color: <span id="color-value"></span></p>
+        <p>Hue: <span id="hue-value"></span>, Saturation: <span id="saturation-value"></span>, Lightness: <span id="lightness-value"></span></p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorwheel = document.getElementById('colorwheel');
+            const selectedColor = document.getElementById('selected-color');
+            const colorValue = document.getElementById('color-value');
+            const hueValue = document.getElementById('hue-value');
+            const saturationValue = document.getElementById('saturation-value');
+            const lightnessValue = document.getElementById('lightness-value');
+
+            function updateColor(e) {
+                const rect = colorwheel.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const x = e.clientX - rect.left - centerX;
+                const y = e.clientY - rect.top - centerY;
+                
+                let angle = Math.atan2(y, x) * (180 / Math.PI);
+                angle = (angle + 360 + 45) % 360;  // Add 45 degrees for clockwise rotation
+                
+                const distanceFromCenter = Math.sqrt(x*x + y*y);
+                const maxDistance = Math.min(centerX, centerY);
+                const saturation = Math.min(distanceFromCenter / maxDistance, 1);
+                
+                let lightness = 0.5;
+                if (distanceFromCenter < maxDistance * 0.3) {
+                    lightness = 0.5 + (1 - distanceFromCenter / (maxDistance * 0.3)) * 0.5;
+                } else if (distanceFromCenter > maxDistance * 0.7) {
+                    lightness = 0.5 - (distanceFromCenter - maxDistance * 0.7) / (maxDistance * 0.3) * 0.5;
+                }
+
+                const color = chroma.hsl(angle, saturation, lightness);
+                
+                selectedColor.style.backgroundColor = color.hex();
+                colorValue.textContent = color.hex();
+                hueValue.textContent = Math.round(angle) + '°';
+                saturationValue.textContent = Math.round(saturation * 100) + '%';
+                lightnessValue.textContent = Math.round(lightness * 100) + '%';
+            }
+
+            colorwheel.addEventListener('mousemove', updateColor);
+            colorwheel.addEventListener('mouseleave', function() {
+                selectedColor.style.backgroundColor = '';
+                colorValue.textContent = 'None';
+                hueValue.textContent = '-';
+                saturationValue.textContent = '-';
+                lightnessValue.textContent = '-';
+            });
+        });
+    </script>
+</body>
+</html>
